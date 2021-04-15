@@ -1,4 +1,5 @@
 let onlyTextLayer = 0,
+	otherLayer = 0,
 	successCount = 0,
 	layerCount = figma.currentPage.selection.length;
 console.log("Selected:", layerCount);
@@ -9,7 +10,7 @@ figma.currentPage.selection.forEach(node => {
 		successCount++;
 		onlyTextLayer++;
 	}
-	else {
+	else if (["FRAME", "GROUP", "COMPONENT_SET", "COMPONENT", "INSTANCE", "BOOLEAN_OPERATION"].includes(node.type)) {
 		let nonText = node.findAll(node => node.type === "TEXT");
 		console.log("[" + node.name + "]", "TextNode:", nonText.length);
 		if (nonText.length === 0) figma.notify(node.name + " doesn't contain text layers", { timeout: 4000 });
@@ -18,8 +19,13 @@ figma.currentPage.selection.forEach(node => {
 			successCount++;
 		}
 	}
+	else {
+		figma.notify(node.name + " cannot contain text layers", { timeout: 4000 });
+		otherLayer++;
+	}
 });
 if (onlyTextLayer > 0) console.log("[Separate TextNode]: ", onlyTextLayer);
+if (otherLayer > 0) console.log("[Other layers]: ", otherLayer);
 if (successCount > 1) {
 	figma.notify("✅ " + successCount + " text layer names reset", { timeout: 2000 });
 }
